@@ -71,16 +71,17 @@
 		// 	console.warn('  wrap swiping');
 		// })
 
+function tap2() {
+	console.log('tap2');
+}
+
 		btnTouch = mTouch('.btn1').on('tap', function (e) {
 			console.log('tap');
 
 			//e.stopPropagation();
 			//return false;
 		})
-		// .on('tap', function (e) {
-		// 	console.log('tap2');
-		// 	//return false;
-		// })
+		.on('tap', tap2)
 		.on('doubletap', function () {
 		 	console.log('double tap');
 		})
