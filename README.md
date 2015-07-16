@@ -2,7 +2,7 @@
 mTouch移动端 ( 兼容pc端) 手势操作库
 
 支持
-```tap```
+`tap`
 ```doubletap```
 ```longtap```
 ```swipestart```
