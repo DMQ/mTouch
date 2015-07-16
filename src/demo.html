@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+	<meta name="format-detection" content="telephone=no" />
+	<title>tap-test</title>
+	<style>
+		*{
+			padding: 0;
+			margin: 0;
+			outline: none;
+			-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+		}
+		button{
+			width: 90%;
+			height: 4rem;
+		}
+	</style>
+</head>
+<body>
+	<div class="btn-wrap">
+		<button class="btn1">按钮1</button>
+		<!-- <button class="btn1">按钮1</button> -->
+		<button class="clear">清空</button>
+	</div>
+	<div class="logger">
+	</div>
+	<script src="mTouch.js"></script>
+	<script>
+		console.error = console.info = console.log = function (msg) {
+			var logger = document.querySelector('.logger');
+			
+			logger.innerHTML = logger.innerHTML + msg + '<br>' 
+		};
+
+		// btnWrap = mTouch('.btn-wrap').on('tap', function () {
+		// 	console.log('  wrap tap');
+		// })
+		// .on('tap', '.btn1', function () {
+		// 	console.log('proxy tap');
+		// })
+		// .on('tap', '.btn1', function () {
+		// 	console.log('proxy tap2');
+		// })
+		// .on('doubletap', function () {
+		//  	console.log('----wrap double tap');
+		//  })
+		// .on('longtap', function () {
+		// 	console.log('long tap');
+		// })
+		// .on('swipestart', function () {
+		// 	console.info('  wrap swipe start');
+		// })
+		// .on('swipeend', function () {
+		// 	console.info('  wrap swipe end');
+		// })
+		// .on('swipeleft', function () {
+		// 	console.info('  wrap swipe left');
+		// })
+		// .on('swiperight', function () {
+		// 	console.info('  wrap swipe right');
+		// })
+		// .on('swipeup', function () {
+		// 	console.info('  wrap swipe up');
+		// })
+		// .on('swipedown', function () {
+		// 	console.info('  wrap swipe down');
+		// })
+		// .on('swiping', function () {
+		// 	console.warn('  wrap swiping');
+		// })
+
+		btnTouch = mTouch('.btn1').on('tap', function (e) {
+			console.log('tap');
+
+			//e.stopPropagation();
+			//return false;
+		})
+		// .on('tap', function (e) {
+		// 	console.log('tap2');
+		// 	//return false;
+		// })
+		.on('doubletap', function () {
+		 	console.log('double tap');
+		})
+		.on('longtap', function () {
+			console.log('long tap');
+		})
+		// .on('swipestart', function (e) {
+		//  	console.info('swipe start');
+		//  	console.log('pageX: ' + e.mTouchEvent.pageX + ' pageY: ' + e.mTouchEvent.pageY)
+		//  })
+		// .on('swipeend', function () {
+		// 	console.info('swipe end');
+		// })
+		.on('swipeleft', function () {
+			console.info('swipe left');
+		})
+		.on('swiperight', function (e) {
+			console.info('swipe right');
+			//console.log('pageX: ' + e.mTouchEvent.pageX + ' pageY: ' + e.mTouchEvent.pageY)
+		})
+		.on('swipeup', function () {
+			console.info('swipe up');
+		})
+		.on('swipedown', function () {
+			console.info('swipe down');
+		})
+		// .on('swiping', function () {
+		// 	console.info('swiping');
+		// })
+
+		// document.querySelector('.btn1').addEventListener('touchend', function (e) {
+		// 	event = e
+		// });
+
+		mTouch('.clear').on('swipestart', function () {
+			document.querySelector('.logger').innerHTML = '';
+			return false;
+		});
+	</script>
+</body>
+</html>
