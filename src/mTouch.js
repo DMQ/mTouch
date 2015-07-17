@@ -23,7 +23,7 @@
 		isProxyTarget: function (el, proxyStr) {
 			//class代理
 			if (proxyStr.startsWith('.')) {
-				return new RegExp('\\s|^' + proxyStr.substring(1) + '\\s|$').test(el.className);
+				return new RegExp('(\\s|^)' + proxyStr.substring(1) + '(\\s|$)').test(el.className);
 			//id代理
 			} else if (proxyStr.startsWith('#')) {
 				return el.id == proxyStr.substring(1);
@@ -42,6 +42,167 @@
 		 */
 		swipeDirection: function (x1, y1, x2, y2) {
 			return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 > x2 ? 'LEFT' : 'RIGHT') : (y1 > y2 ? 'UP' : 'DOWN');
+		},
+
+		/**
+		 * 触发事件，支持事件委托冒泡处理
+		 * @param {string} eventType 事件类型
+		 * @param {object} event 原生事件对象
+		 */
+		_trigger: function (eventType, event) {
+			var target = event.target,
+				currentTarget = event.currentTarget || event.target;
+
+			if (!target || !currentTarget._m_touch_events.hasOwnProperty(eventType)) {
+				return ;
+			}
+
+			var _events = currentTarget._m_touch_events,
+				handlerList = _events[eventType];	//事件回调数组
+
+
+			console.warn(_events);
+
+			var i, len, handler, proxyStr, execList;
+
+			//开始冒泡循环
+			while (1) {
+				if (!target) { return ;}
+
+				execList = [];
+
+				//已冒泡至顶，检测是否需要执行回调
+				if (target === currentTarget) {
+					//筛选符合执行条件的回调
+					for (i = 0, len = handlerList.length; i < len; i++) {
+						handler = handlerList[i].handler,
+						proxyStr = handlerList[i].proxyStr;
+						//如果没有事件委托或者委托的是自身则执行回调
+						if (proxyStr === null || util.isProxyTarget(target, proxyStr)) {
+							execList.push(handlerList[i]);
+						}
+					}
+
+					if (execList.length) {
+						//执行符合条件的回调
+						for (i = 0, len = execList.length; i < len; i++) {
+							handler = execList[i].handler;
+							//如果回调执行后返回false，则跳出冒泡及后续事件
+							if (this._callback(eventType, handler, target, event) === false) {
+								return ;
+							}
+						}
+					}
+
+					return ;	//已冒泡至顶，无需再冒泡
+				}
+
+				//存放临时回调数组
+				var tempHandlerList = handlerList;
+				//清空事件回调数组
+				handlerList = [];
+				//开始遍历回调数组，判断是否是委托目标来决定是否执行回调
+				for (i = 0, len = tempHandlerList.length; i < len; i++) {
+					handler = tempHandlerList[i].handler,
+					proxyStr = tempHandlerList[i].proxyStr;
+
+					//如果是委托目标，则添加到要执行的回调列表
+					if (proxyStr && util.isProxyTarget(target, proxyStr)) {
+						execList.push(tempHandlerList[i]);
+					} else {
+						//不是委托目标，则将回调对象继续压回事件回调数组，继续冒泡
+						handlerList.push(tempHandlerList[i]);
+					}
+				}
+
+				if (execList.length) {
+					//执行符合条件的回调
+					for (i = 0, len = execList.length; i < len; i++) {
+						handler = execList[i].handler;
+						//如果回调执行后返回false，则跳出冒泡及后续事件
+						if (this._callback(eventType, handler, target, event) === false) {
+							return ;
+						}
+					}
+				}
+
+				//向上冒泡
+				target = target.parentNode;
+			}
+		},
+
+		/**
+		 * 执行事件回调
+		 * @param {array} handlerList 事件回调列表
+		 * @return {array} unExecHandlerList 返回不符合执行条件的未执行回调列表
+		 */
+		_execHandler: function (handlerList) {
+			var i, len, execList = [], unExecHandlerList = [];
+
+			for (i = 0, len = handlerList.length; i < len; i++) {
+				handler = handlerList[i].handler,
+				proxyStr = handlerList[i].proxyStr;
+
+				//如果是委托目标，则添加到要执行的回调列表
+				if (proxyStr && util.isProxyTarget(target, proxyStr)) {
+					execList.push(handlerList[i]);
+				} else {
+					//不是委托目标，则将回调对象继续压回事件回调数组，继续冒泡
+					unExecHandlerList.push(handlerList[i]);
+				}
+			}
+
+			if (execList.length) {
+				//执行符合条件的回调
+				for (i = 0, len = execList.length; i < len; i++) {
+					handler = execList[i].handler;
+					//如果回调执行后返回false，则跳出冒泡及后续事件
+					if (this._callback(eventType, handler, target, event) === false) {
+						return ;
+					}
+				}
+			}
+
+			return unExecHandlerList;
+		},
+
+		/**
+		 * 事件回调的最终处理函数
+		 * @param {string} eventType 事件类型
+		 * @param {function} handler 回调函数
+		 * @param {object} el 目标dom节点
+		 * @param {object} event 原生事件对象
+		 */
+		_callback: function (eventType, handler, el, event) {
+			var	touch = this.hasTouch ? (event.touches.length ? event.touches[0] : event.changedTouches[0]) : event;
+
+			//构建新的事件对象
+			var mTouchEvent = {
+				'type': eventType,
+				'target': event.target,
+				'pageX': touch.pageX || 0,
+				'pageY': touch.pageY || 0
+			};
+
+			//如果是滑动事件则添加初始位置及滑动距离
+			if (/^swipe/.test(eventType) && event.startPosition) {
+				mTouchEvent.startX = event.startPosition.pageX;
+				mTouchEvent.startY = event.startPosition.pageY;
+				mTouchEvent.moveX = mTouchEvent.pageX - mTouchEvent.startX;
+				mTouchEvent.moveY = mTouchEvent.pageY - mTouchEvent.startY;
+			}
+
+			//将新的事件对象拓展到原生事件对象里
+			event.mTouchEvent = mTouchEvent;
+
+			var result = handler.call(el, event);
+			//如果回调执行后返回false，则阻止默认行为和阻止冒泡
+			if (result === false) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+
+			return result;
 		}
 	};
 
@@ -51,7 +212,7 @@
 		doubleTapDelay: 200,	//双击事件的延时时长（两次单击的最大时间间隔）
 		longTapDelay: 700,		//长按事件的最小时长
 		swipeMinDistance: 20,	//触发方向滑动的最小距离
-		swipeTime: 200			//触发方向滑动允许的最长时长
+		swipeTime: 300			//触发方向滑动允许的最长时长
 	};
 
 	//事件类型列表
@@ -83,12 +244,12 @@
 		[].forEach.call(elems, function (el, index) {
 			//将事件结合保存在dom节点上，以达到共享的目的
 			el._m_touch_events = el._m_touch_events || {};
+			bindTouchEvents.call(null, el);
 			this[index] = el;
+
 		}.bind(this));
 
 		this.length = elems.length;
-
-		bindTouchEvents.call(this, el);
 	};
 
 	Mtouch.prototype = {
@@ -153,6 +314,12 @@
 			this.each(function () {
 				var _events = this._m_touch_events;
 
+				//没有传事件类型，则解绑所有事件
+				if (!eventType) {
+					this._m_touch_events = {};
+					return ;
+				}
+
 				if (!_events.hasOwnProperty(eventType) || !_events[eventType].length) {
 					return ;
 				}
@@ -187,172 +354,6 @@
 			});
 			
 			return this;
-		},
-
-		_trigger: function (eventType, event) {
-			var target = event.target;
-
-			if (!target || !target._m_touch_events.hasOwnProperty(eventType)) {
-				return ;
-			}
-
-			var _events = target._m_touch_events,
-				handlerList = _events[eventType],	//事件回调数组
-
-			//开始冒泡循环
-			while (1) {
-				var i, len, handler, proxyStr;
-
-				//已冒泡至顶，检测是否需要执行回调
-				if (target === this || !target) {
-
-					for (i = 0, len = handlerList.length; i < len; i++) {
-						handler = handlerList[i].handler,
-						proxyStr = handlerList[i].proxyStr;
-						//如果没有事件委托或者委托的是自身则执行回调
-						if (proxyStr === null || util.isProxyTarget(target, proxyStr)) {
-							//如果回调执行后返回false，则跳出后续事件
-							if (me._callback(eventType, handler, target, event) === false) {
-								break;
-							}
-						}
-					}
-
-					return ;	//已冒泡至顶，无需再冒泡
-				}
-
-				//存放临时回调数组
-				var tempHandlerList = handlerList;
-				//清空事件回调数组
-				handlerList = [];
-				//开始遍历回调数组，判断是否是委托目标来决定是否执行回调
-				for (i = 0, len = tempHandlerList.length; i < len; i++) {
-					handler = tempHandlerList[i].handler,
-					proxyStr = tempHandlerList[i].proxyStr;
-
-					//如果是委托目标，则执行回调
-					if (proxyStr && util.isProxyTarget(target, proxyStr)) {
-						//如果回调执行后返回false，则跳出冒泡及后续事件
-						if (this._callback(eventType, handler, target, event) === false) {
-							return ;
-						};
-					} else {
-						//不是委托目标，则将回调对象继续压回事件回调数组，继续冒泡
-						handlerList.push(tempHandlerList[i]);
-					}
-				}
-
-				//向上冒泡
-				target = target.parentNode;
-			}
-		},
-
-		/**
-		 * 触发事件，支持事件委托冒泡处理
-		 * @param {string} eventType 事件类型
-		 * @param {object} event 原生事件对象
-		 */
-		trigger: function (eventType, event) {
-			var me = this;
-
-			this.each(function () {
-				var target = event.target,
-					_events = this._m_touch_events;
-
-				if (!_events.hasOwnProperty(eventType)) {
-					return ;
-				}
-
-				var handlerList = _events[eventType],	//事件回调数组
-
-				//开始冒泡循环
-				while (1) {
-					var i, len, handler, proxyStr;
-
-					//已冒泡至顶，检测是否需要执行回调
-					if (target === this || !target) {
-
-						for (i = 0, len = handlerList.length; i < len; i++) {
-							handler = handlerList[i].handler,
-							proxyStr = handlerList[i].proxyStr;
-							//如果没有事件委托或者委托的是自身则执行回调
-							if (proxyStr === null || util.isProxyTarget(target, proxyStr)) {
-								//如果回调执行后返回false，则跳出后续事件
-								if (me._callback(eventType, handler, target, event) === false) {
-									break;
-								}
-							}
-						}
-
-						return ;	//已冒泡至顶，无需再冒泡
-					}
-
-					//存放临时回调数组
-					var tempHandlerList = handlerList;
-					//清空事件回调数组
-					handlerList = [];
-					//开始遍历回调数组，判断是否是委托目标来决定是否执行回调
-					for (i = 0, len = tempHandlerList.length; i < len; i++) {
-						handler = tempHandlerList[i].handler,
-						proxyStr = tempHandlerList[i].proxyStr;
-
-						//如果是委托目标，则执行回调
-						if (proxyStr && util.isProxyTarget(target, proxyStr)) {
-							//如果回调执行后返回false，则跳出冒泡及后续事件
-							if (this._callback(eventType, handler, target, event) === false) {
-								return ;
-							};
-						} else {
-							//不是委托目标，则将回调对象继续压回事件回调数组，继续冒泡
-							handlerList.push(tempHandlerList[i]);
-						}
-					}
-
-					//向上冒泡
-					target = target.parentNode;
-				}		
-			});
-
-				
-		},
-
-		/**
-		 * 事件回调的处理函数
-		 * @param {string} eventType 事件类型
-		 * @param {function} handler 回调函数
-		 * @param {object} el 目标dom节点
-		 * @param {object} event 原生事件对象
-		 */
-		_callback: function (eventType, handler, el, event) {
-			var	touch = util.hasTouch ? (event.touches.length ? event.touches[0] : event.changedTouches[0]) : event;
-
-			//构建新的事件对象
-			var mTouchEvent = {
-				'type': eventType,
-				'target': event.target,
-				'pageX': touch.pageX || 0,
-				'pageY': touch.pageY || 0
-			};
-
-			//如果是滑动事件则添加初始位置及滑动距离
-			if (/^swipe/.test(eventType) && event.startPosition) {
-				mTouchEvent.startX = event.startPosition.pageX;
-				mTouchEvent.startY = event.startPosition.pageY;
-				mTouchEvent.moveX = mTouchEvent.pageX - mTouchEvent.startX;
-				mTouchEvent.moveY = mTouchEvent.pageY - mTouchEvent.startY;
-			}
-
-			//将新的事件对象拓展到原生事件对象里
-			event.mTouchEvent = mTouchEvent;
-
-			var result = handler.call(el, event);
-			//如果回调执行后返回false，则阻止默认行为和阻止冒泡
-			if (result === false) {
-				event.preventDefault();
-				event.stopPropagation();
-			}
-
-			return result;
 		}
 	};
 
@@ -361,7 +362,10 @@
 	 * @param {object} el 对应的dom节点
 	 */
 	function bindTouchEvents(el) {
-		var touchInstance = this;
+		if (el._m_touch_is_bind) {
+			return ;
+		}
+
 		//触屏开始时间
 		var touchStartTime = 0;
 
@@ -390,7 +394,7 @@
 		var triggerSingleTap = function (event) {
 			isTouchStart = false;
 			resetTimer();
-			touchInstance.trigger(eventList.TAP, event);
+			util._trigger(eventList.TAP, event);
 		};
 
 		//开始触屏监听函数
@@ -407,7 +411,7 @@
 			touchStartTime = +new Date();
 
 			//触发滑动开始事件
-			touchInstance.trigger(eventList.SWIPE_START, event);
+			util._trigger(eventList.SWIPE_START, event);
 
 			clearTimeout(longTapTimer);
 			//设置长按事件定时器
@@ -415,7 +419,7 @@
 				isTouchStart = false;
 				//清楚定时器
 				resetTimer();
-				touchInstance.trigger(eventList.LONG_TAP, event);
+				util._trigger(eventList.LONG_TAP, event);
 			}, config.longTapDelay);
 		};
 
@@ -435,7 +439,7 @@
 			};
 
 			//触发滑动中事件
-			touchInstance.trigger(eventList.SWIPING, event);
+			util._trigger(eventList.SWIPING, event);
 
 			x2 = touch.pageX;
 			y2 = touch.pageY;
@@ -459,7 +463,7 @@
 				resetTimer();
 				isSwiped = true;
 
-				touchInstance.trigger(eventList['SWIPE_' + direction], event);
+				util._trigger(eventList['SWIPE_' + direction], event);
 			}			
 		};
 
@@ -477,12 +481,12 @@
 			var now = +new Date();
 
 			//触发滑动结束事件
-			touchInstance.trigger(eventList.SWIPE_END, event);
+			util._trigger(eventList.SWIPE_END, event);
 
 			//如果开始跟结束坐标距离在允许范围内则触发单击事件
 			if (Math.abs(x1 - x2) <= config.tapMaxDistance && Math.abs(y1 - y2) <= config.tapMaxDistance) {
 				//如果没有绑定双击事件，则立即出发单击事件
-				if (!touchInstance._events[eventList.DOUBLE_TAP] || !touchInstance._events[eventList.DOUBLE_TAP].length ) {
+				if (!el._m_touch_events[eventList.DOUBLE_TAP] || !el._m_touch_events[eventList.DOUBLE_TAP].length ) {
 					triggerSingleTap(event);
 					lastTouchTime = now;
 
@@ -498,7 +502,7 @@
 				//则清除单击事件计时器，并触发双击事件
 				} else {
 					resetTimer();
-					touchInstance.trigger(eventList.DOUBLE_TAP, event);
+					util._trigger(eventList.DOUBLE_TAP, event);
 					//双击后重置最后触屏时间为0，是为了从新开始计算下一次双击时长
 					lastTouchTime = 0;
 				}
@@ -515,6 +519,8 @@
 		el.addEventListener(eventList.TOUCH_END, touchend);
 		//绑定触屏取消事件
 		el.addEventListener(eventList.TOUCH_CANCEL, resetTimer);
+
+		el._m_touch_is_bind = true;	//标记该节点已经绑定过touch事件了
 	}
 
 
@@ -525,17 +531,7 @@
 	var mTouch = function (selector) {
 		var elems = doc.querySelectorAll(selector);
 
-		//if (!elems.length) { return ;}
-
-		//var touchArr = [], i = 0, len = elems.length;
-
-		// for (; i < len; i++) {
-		// 	touchArr.push(new Mtouch(elems[i]));
-		// }
-
-		//return touchArr.length > 1 ? touchArr : touchArr[0];
-
-		return new mTouch(elems);
+		return new Mtouch(elems);
 	};
 	//配置touch事件相关控制的接口
 	mTouch.config = function (cfg) {

@@ -12,9 +12,12 @@
 			outline: none;
 			-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 		}
+		.btn-wrap {
+			text-align: center;
+		}
 		button{
-			width: 90%;
-			height: 4rem;
+			width: 30%;
+			height: 3rem;
 		}
 	</style>
 </head>
@@ -22,6 +25,7 @@
 	<div class="btn-wrap">
 		<button class="btn1">按钮1</button>
 		<!-- <button class="btn1">按钮1</button> -->
+		<button class="cancel">解绑</button>
 		<button class="clear">清空</button>
 	</div>
 	<div class="logger">
@@ -71,52 +75,64 @@
 		// 	console.warn('  wrap swiping');
 		// })
 
-function tap2() {
-	console.log('tap2');
-}
+		function tap2() {
+			console.log('tap2');
+		}
 
-		btnTouch = mTouch('.btn1').on('tap', function (e) {
-			console.log('tap');
+		function bindBtn1(){
+			mTouch('.btn1').on('tap', function (e) {
+				console.log('tap');
 
-			//e.stopPropagation();
-			//return false;
-		})
-		.on('tap', tap2)
-		.on('doubletap', function () {
-		 	console.log('double tap');
-		})
-		.on('longtap', function () {
-			console.log('long tap');
-		})
-		// .on('swipestart', function (e) {
-		//  	console.info('swipe start');
-		//  	console.log('pageX: ' + e.mTouchEvent.pageX + ' pageY: ' + e.mTouchEvent.pageY)
-		//  })
-		// .on('swipeend', function () {
-		// 	console.info('swipe end');
-		// })
-		.on('swipeleft', function () {
-			console.info('swipe left');
-		})
-		.on('swiperight', function (e) {
-			console.info('swipe right');
-			//console.log('pageX: ' + e.mTouchEvent.pageX + ' pageY: ' + e.mTouchEvent.pageY)
-		})
-		.on('swipeup', function () {
-			console.info('swipe up');
-		})
-		.on('swipedown', function () {
-			console.info('swipe down');
-		})
-		// .on('swiping', function () {
-		// 	console.info('swiping');
-		// })
+				//e.stopPropagation();
+				//return false;
+			})
+			.on('tap', tap2)
+			.on('doubletap', function () {
+			 	console.log('double tap');
+			})
+			.on('longtap', function () {
+				console.log('long tap');
+			})
+			.on('swipestart', function (e) {
+			 	console.info('swipe start');
+			 })
+			.on('swipeend', function () {
+				console.info('swipe end');
+			})
+			.on('swipeleft', function () {
+				console.info('swipe left');
+			})
+			.on('swiperight', function (e) {
+				console.info('swipe right');
+				//console.log('pageX: ' + e.mTouchEvent.pageX + ' pageY: ' + e.mTouchEvent.pageY)
+			})
+			.on('swipeup', function () {
+				console.info('swipe up');
+			})
+			.on('swipedown', function () {
+				console.info('swipe down');
+			})
+			.on('swiping', function () {
+				console.info('swiping');
+			})
+		}
 
-		// document.querySelector('.btn1').addEventListener('touchend', function (e) {
-		// 	event = e
-		// });
+		bindBtn1();
 
-		mTouch('.clear').on('swipestart', function () {
+		//取消绑定
+		mTouch('.btn-wrap').on('tap', '.cancel', function () {
+			mTouch('.btn1').off();
+			this.className = 'bind';
+			this.innerHTML = '绑定';
+
+		}).on('tap', '.bind', function () {
+			bindBtn1();
+			this.className = 'cancel';
+			this.innerHTML = '解绑';
+		});
+
+		//清空日志
+		mTouch('.clear').on('tap', function () {
 			document.querySelector('.logger').innerHTML = '';
 			return false;
 		});
