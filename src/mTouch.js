@@ -47,11 +47,12 @@
 		/**
 		 * 触发事件，支持事件委托冒泡处理
 		 * @param {string} eventType 事件类型
+		 * @param {object} el 绑定了touch事件的dom元素
 		 * @param {object} event 原生事件对象
 		 */
-		_trigger: function (eventType, event) {
+		_trigger: function (eventType, el, event) {
 			var target = event.target,
-				currentTarget = event.currentTarget || event.target;
+				currentTarget = el || event.currentTarget || event.target;
 
 			if (!target || !currentTarget._m_touch_events.hasOwnProperty(eventType)) {
 				return ;
@@ -60,70 +61,27 @@
 			var _events = currentTarget._m_touch_events,
 				handlerList = _events[eventType];	//事件回调数组
 
-
-			console.warn(_events);
-
-			var i, len, handler, proxyStr, execList;
-
 			//开始冒泡循环
 			while (1) {
 				if (!target) { return ;}
 
-				execList = [];
-
 				//已冒泡至顶，检测是否需要执行回调
 				if (target === currentTarget) {
-					//筛选符合执行条件的回调
-					for (i = 0, len = handlerList.length; i < len; i++) {
-						handler = handlerList[i].handler,
-						proxyStr = handlerList[i].proxyStr;
-						//如果没有事件委托或者委托的是自身则执行回调
-						if (proxyStr === null || util.isProxyTarget(target, proxyStr)) {
-							execList.push(handlerList[i]);
-						}
-					}
-
-					if (execList.length) {
-						//执行符合条件的回调
-						for (i = 0, len = execList.length; i < len; i++) {
-							handler = execList[i].handler;
-							//如果回调执行后返回false，则跳出冒泡及后续事件
-							if (this._callback(eventType, handler, target, event) === false) {
-								return ;
-							}
-						}
-					}
+					//处理（执行）事件回调列表
+					this._execHandler(handlerList, eventType, target, event, true);
 
 					return ;	//已冒泡至顶，无需再冒泡
 				}
 
 				//存放临时回调数组
 				var tempHandlerList = handlerList;
-				//清空事件回调数组
-				handlerList = [];
-				//开始遍历回调数组，判断是否是委托目标来决定是否执行回调
-				for (i = 0, len = tempHandlerList.length; i < len; i++) {
-					handler = tempHandlerList[i].handler,
-					proxyStr = tempHandlerList[i].proxyStr;
-
-					//如果是委托目标，则添加到要执行的回调列表
-					if (proxyStr && util.isProxyTarget(target, proxyStr)) {
-						execList.push(tempHandlerList[i]);
-					} else {
-						//不是委托目标，则将回调对象继续压回事件回调数组，继续冒泡
-						handlerList.push(tempHandlerList[i]);
-					}
-				}
-
-				if (execList.length) {
-					//执行符合条件的回调
-					for (i = 0, len = execList.length; i < len; i++) {
-						handler = execList[i].handler;
-						//如果回调执行后返回false，则跳出冒泡及后续事件
-						if (this._callback(eventType, handler, target, event) === false) {
-							return ;
-						}
-					}
+				// //清空事件回调数组
+				// handlerList = [];
+				//处理（执行）事件回调列表，并返回未执行的回调列表重新赋值给handlerList继续冒泡
+				handlerList = this._execHandler(tempHandlerList, eventType, target, event, false);
+				//如果执行结果返回false，则跳出冒泡及后续事件
+				if (handlerList === false) {
+					return ;
 				}
 
 				//向上冒泡
@@ -134,23 +92,36 @@
 		/**
 		 * 执行事件回调
 		 * @param {array} handlerList 事件回调列表
+		 * @param {string} eventType 事件类型
+		 * @param {object} target 当前目标dom节点
+		 * @param {object} event 原生事件对象
+		 * @param {boolean} isBubbleTop 是否冒泡至顶了
 		 * @return {array} unExecHandlerList 返回不符合执行条件的未执行回调列表
 		 */
-		_execHandler: function (handlerList) {
-			var i, len, execList = [], unExecHandlerList = [];
+		_execHandler: function (handlerList, eventType, target, event, isBubbleTop) {
+			var i, len, handlerObj, proxyStr,
+				execList = [], unExecHandlerList = [];
 
 			for (i = 0, len = handlerList.length; i < len; i++) {
-				handler = handlerList[i].handler,
-				proxyStr = handlerList[i].proxyStr;
+				handlerObj = handlerList[i];
+				proxyStr = handlerObj.proxyStr;
 
-				//如果是委托目标，则添加到要执行的回调列表
-				if (proxyStr && util.isProxyTarget(target, proxyStr)) {
-					execList.push(handlerList[i]);
+				//如果冒泡至顶
+				if (isBubbleTop) {
+					//将符合执行条件的（没有事件委托）推进执行列表
+					!proxyStr && execList.push(handlerObj);
+				//未冒泡至顶
 				} else {
-					//不是委托目标，则将回调对象继续压回事件回调数组，继续冒泡
-					unExecHandlerList.push(handlerList[i]);
+					//将符合执行条件的（有事件委托且是委托目标）推进执行列表
+					if (proxyStr && this.isProxyTarget(target, proxyStr)) {
+						execList.push(handlerObj);
+					} else {
+						unExecHandlerList.push(handlerObj);
+					}
 				}
 			}
+
+			var handler;
 
 			if (execList.length) {
 				//执行符合条件的回调
@@ -158,7 +129,7 @@
 					handler = execList[i].handler;
 					//如果回调执行后返回false，则跳出冒泡及后续事件
 					if (this._callback(eventType, handler, target, event) === false) {
-						return ;
+						return false;
 					}
 				}
 			}
@@ -394,7 +365,7 @@
 		var triggerSingleTap = function (event) {
 			isTouchStart = false;
 			resetTimer();
-			util._trigger(eventList.TAP, event);
+			util._trigger(eventList.TAP, el, event);
 		};
 
 		//开始触屏监听函数
@@ -411,7 +382,7 @@
 			touchStartTime = +new Date();
 
 			//触发滑动开始事件
-			util._trigger(eventList.SWIPE_START, event);
+			util._trigger(eventList.SWIPE_START, el, event);
 
 			clearTimeout(longTapTimer);
 			//设置长按事件定时器
@@ -419,7 +390,7 @@
 				isTouchStart = false;
 				//清楚定时器
 				resetTimer();
-				util._trigger(eventList.LONG_TAP, event);
+				util._trigger(eventList.LONG_TAP, el, event);
 			}, config.longTapDelay);
 		};
 
@@ -439,7 +410,7 @@
 			};
 
 			//触发滑动中事件
-			util._trigger(eventList.SWIPING, event);
+			util._trigger(eventList.SWIPING, el, event);
 
 			x2 = touch.pageX;
 			y2 = touch.pageY;
@@ -463,7 +434,7 @@
 				resetTimer();
 				isSwiped = true;
 
-				util._trigger(eventList['SWIPE_' + direction], event);
+				util._trigger(eventList['SWIPE_' + direction], el, event);
 			}			
 		};
 
@@ -481,7 +452,7 @@
 			var now = +new Date();
 
 			//触发滑动结束事件
-			util._trigger(eventList.SWIPE_END, event);
+			util._trigger(eventList.SWIPE_END, el, event);
 
 			//如果开始跟结束坐标距离在允许范围内则触发单击事件
 			if (Math.abs(x1 - x2) <= config.tapMaxDistance && Math.abs(y1 - y2) <= config.tapMaxDistance) {
@@ -502,7 +473,7 @@
 				//则清除单击事件计时器，并触发双击事件
 				} else {
 					resetTimer();
-					util._trigger(eventList.DOUBLE_TAP, event);
+					util._trigger(eventList.DOUBLE_TAP, el, event);
 					//双击后重置最后触屏时间为0，是为了从新开始计算下一次双击时长
 					lastTouchTime = 0;
 				}

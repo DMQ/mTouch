@@ -44,21 +44,18 @@
 		// .on('tap', '.btn1', function () {
 		// 	console.log('proxy tap');
 		// })
-		// .on('tap', '.btn1', function () {
-		// 	console.log('proxy tap2');
-		// })
-		// .on('doubletap', function () {
-		//  	console.log('----wrap double tap');
-		//  })
-		// .on('longtap', function () {
-		// 	console.log('long tap');
-		// })
-		// .on('swipestart', function () {
-		// 	console.info('  wrap swipe start');
-		// })
-		// .on('swipeend', function () {
-		// 	console.info('  wrap swipe end');
-		// })
+		// // .on('doubletap', function () {
+		// //  	console.log('----wrap double tap');
+		// //  })
+		// // .on('longtap', function () {
+		// // 	console.log('long tap');
+		// // })
+		// // .on('swipestart', function () {
+		// // 	console.info('  wrap swipe start');
+		// // })
+		// // .on('swipeend', function () {
+		// // 	console.info('  wrap swipe end');
+		// // })
 		// .on('swipeleft', function () {
 		// 	console.info('  wrap swipe left');
 		// })
@@ -72,7 +69,7 @@
 		// 	console.info('  wrap swipe down');
 		// })
 		// .on('swiping', function () {
-		// 	console.warn('  wrap swiping');
+		// 	console.info('  wrap swiping');
 		// })
 
 		function tap2() {
@@ -93,12 +90,12 @@
 			.on('longtap', function () {
 				console.log('long tap');
 			})
-			.on('swipestart', function (e) {
-			 	console.info('swipe start');
-			 })
-			.on('swipeend', function () {
-				console.info('swipe end');
-			})
+			// .on('swipestart', function (e) {
+			//  	console.info('swipe start');
+			//  })
+			// .on('swipeend', function () {
+			// 	console.info('swipe end');
+			// })
 			.on('swipeleft', function () {
 				console.info('swipe left');
 			})
@@ -114,6 +111,7 @@
 			})
 			.on('swiping', function () {
 				console.info('swiping');
+				return false;
 			})
 		}
 
@@ -127,7 +125,7 @@
 
 		}).on('tap', '.bind', function () {
 			bindBtn1();
-			this.className = 'cancel';
+			this.className = 'cancel';	
 			this.innerHTML = '解绑';
 		});
 
