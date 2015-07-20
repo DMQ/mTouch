@@ -22,10 +22,10 @@
 		 */
 		isProxyTarget: function (el, proxyStr) {
 			//class代理
-			if (proxyStr.startsWith('.')) {
+			if (proxyStr.indexOf('.') === 0) {
 				return new RegExp('(\\s|^)' + proxyStr.substring(1) + '(\\s|$)').test(el.className);
 			//id代理
-			} else if (proxyStr.startsWith('#')) {
+			} else if (proxyStr.indexOf('#') === 0) {
 				return el.id == proxyStr.substring(1);
 			//标签代理
 			} else {
@@ -156,7 +156,7 @@
 			};
 
 			//如果是滑动事件则添加初始位置及滑动距离
-			if (/^swipe/.test(eventType) && event.startPosition) {
+			if (/^swip/.test(eventType) && event.startPosition) {
 				mTouchEvent.startX = event.startPosition.pageX;
 				mTouchEvent.startY = event.startPosition.pageY;
 				mTouchEvent.moveX = mTouchEvent.pageX - mTouchEvent.startX;

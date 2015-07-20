@@ -19,6 +19,90 @@
 			width: 30%;
 			height: 3rem;
 		}
+		.slider-wrap{
+			 width: 94%;
+			height: 50px;
+			line-height: 50px;
+			margin: 10px auto;
+			position: relative;
+			overflow: hidden;
+		}
+		.slider{
+			padding-left: 20px;
+			background-color: #eee;
+			-webkit-transition: all .15s linear;
+					transition: all .15s linear;
+		}
+		.swipe-left .slider{
+			-webkit-transform: translateX(-60px);
+					transform: translateX(-60px);
+		}
+		.btn-del{
+			width: 60px;
+			height: 50px;
+			background-color: #F21B1B;
+			text-align: center;
+			color: #fff;
+			position: absolute;
+			right: -60px;
+			top: 0;
+			-webkit-transition: all .15s linear;
+					transition: all .15s linear;
+		}
+		.swipe-left .btn-del{
+			-webkit-transform: translateX(-60px);
+					transform: translateX(-60px);
+		}
+
+		.assistive-wrap{
+			width: 58px;
+			height: 58px;
+			position: absolute;
+			top: 50%;
+			margin-top: -29px;
+			left: 1px;
+		}
+
+		.assistive-touch{
+			width: 100%;
+			height: 100%;
+			background: #343434;
+			border-radius: 10px;
+			opacity: .3;
+			position: relative;
+		}
+
+		.assistive-touch:before, .assistive-touch:after, .assistive-touch span{
+			content: '';
+			position: absolute;
+			border-radius: 100%;
+			box-shadow: 0 0 2px rgba(30, 30, 30, .5);
+			display: block;
+			background: rgba(255, 255, 255, .6);
+		}
+
+		.assistive-touch:before{
+			width: 42px;
+			height: 42px;
+			left: 8px;
+			top: 8px;
+			opacity: .5;
+		}
+
+		.assistive-touch span{
+			width: 34px;
+			height: 34px;
+			left: 12px;
+			top: 12px;
+		}
+
+		.assistive-touch:after{
+			width: 26px;
+			height: 26px;
+			left: 16px;
+			top: 16px;
+			background: #fff;
+		}
 	</style>
 </head>
 <body>
@@ -28,11 +112,19 @@
 		<button class="cancel">解绑</button>
 		<button class="clear">清空</button>
 	</div>
-	<div class="logger">
+	<div class="slider-wrap">
+		<div class="slider">滑我</div>
+		<div class="btn-del">删除</div>
 	</div>
+	<div class="assistive-wrap">
+		<div class="assistive-touch">
+			<span></span>
+		</div>
+	</div>
+	<div class="logger"></div>
 	<script src="mTouch.js"></script>
 	<script>
-		console.error = console.info = console.log = function (msg) {
+		console.log = function (msg) {
 			var logger = document.querySelector('.logger');
 			
 			logger.innerHTML = logger.innerHTML + msg + '<br>' 
@@ -90,27 +182,27 @@
 			.on('longtap', function () {
 				console.log('long tap');
 			})
-			// .on('swipestart', function (e) {
-			//  	console.info('swipe start');
-			//  })
-			// .on('swipeend', function () {
-			// 	console.info('swipe end');
-			// })
+			.on('swipestart', function (e) {
+			 	console.log('swipe start');
+			 })
+			.on('swipeend', function () {
+				console.log('swipe end');
+			})
 			.on('swipeleft', function () {
-				console.info('swipe left');
+				console.log('swipe left');
 			})
 			.on('swiperight', function (e) {
-				console.info('swipe right');
+				console.log('swipe right');
 				//console.log('pageX: ' + e.mTouchEvent.pageX + ' pageY: ' + e.mTouchEvent.pageY)
 			})
 			.on('swipeup', function () {
-				console.info('swipe up');
+				console.log('swipe up');
 			})
 			.on('swipedown', function () {
-				console.info('swipe down');
+				console.log('swipe down');
 			})
-			.on('swiping', function () {
-				console.info('swiping');
+			.on('swiping', function (e) {
+				console.log('swiping');
 				return false;
 			})
 		}
@@ -133,6 +225,60 @@
 		mTouch('.clear').on('tap', function () {
 			document.querySelector('.logger').innerHTML = '';
 			return false;
+		});
+
+		//滑动删除
+		mTouch('.slider-wrap').on('swipeleft', function (e) {
+			var className = this.className;
+
+			if (className.indexOf('swipe-left') == -1) {
+				this.className = className + ' swipe-left';
+			}
+		})
+		.on('swiperight', function () {
+			this.className = this.className.replace(/\s?swipe-left/, '');
+		});
+
+		//悬浮球
+		var assistiveLeft, assistiveRight, timerid;
+
+		var stickEdge = function (el) {
+			var left = parseInt(el.style.left) || 0,
+				width = parseInt(el.offsetWidth) || 0,
+				windowWith = (document.documentElement || document.body).offsetWidth;
+
+			if (left > (windowWith - width) / 2) {
+				left = windowWith - width - 2;
+			} else {
+				left = 0;
+			}
+
+			el.style.transition = 'all .2s';
+			el.style['-webkit-transition'] = 'all .2s';
+			el.style.left = left + 'px';
+			timerid = setTimeout(function () {
+				el.style.transition = 'all .5s';
+				el.style['-webkit-transition'] = 'all .5s';
+				el.style.opacity = '.3';
+			}, 2000);
+		};
+
+		mTouch('.assistive-touch').on('swipestart', function () {
+			clearTimeout(timerid);
+
+			this.style.transition = 'none';
+			this.style['-webkit-transition'] = 'none';
+			this.style.opacity = '.8';
+
+			assistiveLeft = parseInt(this.style.left) || 0;
+			assistiveTop = parseInt(this.style.top) || 0;
+		})
+		.on('swiping', function (e) {
+			this.style.left =  assistiveLeft + e.mTouchEvent.moveX + 'px';
+			this.style.top = assistiveTop + e.mTouchEvent.moveY + 'px';
+		})
+		.on('swipeend', function () {
+			stickEdge(this);
 		});
 	</script>
 </body>
