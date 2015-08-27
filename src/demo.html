@@ -11,6 +11,7 @@
 			margin: 0;
 			outline: none;
 			-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+			-webkit-user-select:none;
 		}
 		.btn-wrap {
 			text-align: center;
@@ -57,7 +58,7 @@
 		.assistive-wrap{
 			width: 58px;
 			height: 58px;
-			position: absolute;
+			position: fixed;
 			top: 50%;
 			margin-top: -29px;
 			left: 1px;
@@ -103,6 +104,10 @@
 			top: 16px;
 			background: #fff;
 		}
+		.padd{
+			height: 1000px;
+			background: #ccc;
+		}
 	</style>
 </head>
 <body>
@@ -122,6 +127,7 @@
 		</div>
 	</div>
 	<div class="logger"></div>
+	<div class="padd"></div>
 	<script src="mTouch.js"></script>
 	<script>
 		console.log = function (msg) {
@@ -234,9 +240,12 @@
 			if (className.indexOf('swipe-left') == -1) {
 				this.className = className + ' swipe-left';
 			}
+
+			return false;
 		})
 		.on('swiperight', function () {
 			this.className = this.className.replace(/\s?swipe-left/, '');
+			return false;
 		});
 
 		//悬浮球
@@ -272,6 +281,8 @@
 
 			assistiveLeft = parseInt(this.style.left) || 0;
 			assistiveTop = parseInt(this.style.top) || 0;
+
+			return false;
 		})
 		.on('swiping', function (e) {
 			this.style.left =  assistiveLeft + e.mTouchEvent.moveX + 'px';

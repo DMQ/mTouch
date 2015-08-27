@@ -179,10 +179,10 @@
 
 	//相关控制配置项
 	var config = {
-		tapMaxDistance: 10,		//单击事件允许的滑动距离
+		tapMaxDistance: 5,		//单击事件允许的滑动距离
 		doubleTapDelay: 200,	//双击事件的延时时长（两次单击的最大时间间隔）
 		longTapDelay: 700,		//长按事件的最小时长
-		swipeMinDistance: 20,	//触发方向滑动的最小距离
+		swipeMinDistance: 5,	//触发方向滑动的最小距离
 		swipeTime: 300			//触发方向滑动允许的最长时长
 	};
 
@@ -352,9 +352,6 @@
 		//记录是否触屏开始
 		var isTouchStart = false;
 
-		//是否已经触发了方向滑动事件
-		var isSwiped = false;
-
 		//重置所有定时器
 		var resetTimer = function () {
 			clearTimeout(tapTimer);
@@ -378,7 +375,6 @@
 			y2 = 0;
 
 			isTouchStart = true;
-			isSwiped = false;
 			touchStartTime = +new Date();
 
 			//触发滑动开始事件
@@ -423,19 +419,10 @@
 				resetTimer();
 			}
 
-			//如果滑动时长在允许的范围内，且滑动距离超过了最小控制阀值，触发方向滑动事件
-			if (!isSwiped
-				&& now - touchStartTime <= config.swipeTime
-				&& ( distanceX > config.swipeMinDistance  || distanceY > config.swipeMinDistance)
-			) {
-				//滑动方向LEFT, RIGHT, UP, DOWN
-				var direction = util.swipeDirection(x1, y1, x2, y2);
-
-				resetTimer();
-				isSwiped = true;
-
-				util._trigger(eventList['SWIPE_' + direction], el, event);
-			}			
+			if (distanceX > config.tapMaxDistance) {
+				event.preventDefault();
+			}
+			
 		};
 
 		//触屏结束函数
@@ -454,8 +441,11 @@
 			//触发滑动结束事件
 			util._trigger(eventList.SWIPE_END, el, event);
 
+			var distanceX = Math.abs(x1 - x2),
+				distanceY = Math.abs(y1 - y2);
+
 			//如果开始跟结束坐标距离在允许范围内则触发单击事件
-			if (Math.abs(x1 - x2) <= config.tapMaxDistance && Math.abs(y1 - y2) <= config.tapMaxDistance) {
+			if (distanceX <= config.tapMaxDistance && distanceY <= config.tapMaxDistance) {
 				//如果没有绑定双击事件，则立即出发单击事件
 				if (!el._m_touch_events[eventList.DOUBLE_TAP] || !el._m_touch_events[eventList.DOUBLE_TAP].length ) {
 					triggerSingleTap(event);
@@ -476,6 +466,19 @@
 					util._trigger(eventList.DOUBLE_TAP, el, event);
 					//双击后重置最后触屏时间为0，是为了从新开始计算下一次双击时长
 					lastTouchTime = 0;
+				}
+			//触发方向滑动事件
+			} else {
+				//如果滑动时长在允许的范围内，且滑动距离超过了最小控制阀值，触发方向滑动事件
+				if (now - touchStartTime <= config.swipeTime
+					&& ( distanceX > config.swipeMinDistance  || distanceY > config.swipeMinDistance)
+				) {
+					//滑动方向LEFT, RIGHT, UP, DOWN
+					var direction = util.swipeDirection(x1, y1, x2, y2);
+
+					resetTimer();
+
+					util._trigger(eventList['SWIPE_' + direction], el, event);
 				}
 			}
 
@@ -500,7 +503,12 @@
 	 * @param {string} selector 选择器字符串
 	 */
 	var mTouch = function (selector) {
-		var elems = doc.querySelectorAll(selector);
+		var elems;
+		if (selector === doc || selector.nodeType === 1) {
+			elems = [selector];
+		} else {
+			elems = doc.querySelectorAll(selector);
+		}
 
 		return new Mtouch(elems);
 	};
