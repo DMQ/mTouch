@@ -419,9 +419,9 @@
 				resetTimer();
 			}
 
-			if (distanceX > config.tapMaxDistance) {
-				event.preventDefault();
-			}
+			// if (distanceX > config.tapMaxDistance) {
+			// 	event.preventDefault();
+			// }
 			
 		};
 
