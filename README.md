@@ -1,7 +1,6 @@
 # mTouch
 mTouch移动端 ( 兼容pc端) 手势操作库
 
-实现思路参考 http://bh-lay.github.io/toucher
 
 支持的事件：
 * `tap`  单击
