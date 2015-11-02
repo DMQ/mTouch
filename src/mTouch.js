@@ -11,10 +11,22 @@
 	}
 
 })(window || this, document, function (global, doc) {
+	var mobileChecker = {
+		ios: ua.match(/\((i[^;]+);.+OS\s([\d_\.]+)/),
+
+		android: ua.match(/(Android)[\s\/]+([\d\.]+)/),
+
+		wp: ua.match(/(Windows\s+Phone)\s([\d\.]+)/),
+
+		getMobile: function () {
+			return this.ios || this.android || this.wp;
+		}
+	};
 
 	var util = {
 		//是否具有touch事件
-		hasTouch: !!('ontouchstart' in window),
+		hasTouch: !!('ontouchstart' in window && mobileChecker.getMobile()),
+		
 		/**
 		 * 判断节点是否是事件代理的目标
 		 * @param {object} el dom节点对象
