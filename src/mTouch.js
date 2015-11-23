@@ -1,5 +1,5 @@
 (function (global, doc, factory) {
-	factory = factory(global, doc);
+	factory = factory(global, doc, navigator.userAgent);
 
 	//对外提供的接口
 	if (typeof global.define === 'function' && (define.amd || define.cmd)) {
@@ -10,7 +10,7 @@
 		global.mTouch = global.mTouch || factory;
 	}
 
-})(window || this, document, function (global, doc) {
+})(window || this, document, function (global, doc, ua) {
 	var mobileChecker = {
 		ios: ua.match(/\((i[^;]+);.+OS\s([\d_\.]+)/),
 
