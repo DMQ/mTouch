@@ -2,21 +2,21 @@
  * vue版本
  */
 
-(function (global, doc, factory) {
+(function(global, doc, factory) {
 	factory = factory(global, doc, navigator.userAgent);
 
 	//对外提供的接口
 	if (typeof exports == 'object') {
 		module.exports = factory;
 	} else if (typeof global.define === 'function' && (define.amd || define.cmd)) {
-		define([], function () {
+		define([], function() {
 			return factory;
 		});
 	} else {
 		global.mTouch = global.mTouch || factory;
 	}
 
-})(window || this, document, function (global, doc, ua) {
+})(window || this, document, function(global, doc, ua) {
 	var mobileChecker = {
 		ios: ua.match(/\((i[^;]+);.+OS\s([\d_\.]+)/),
 
@@ -24,7 +24,7 @@
 
 		wp: ua.match(/(Windows\s+Phone)\s([\d\.]+)/),
 
-		getMobile: function () {
+		getMobile: function() {
 			return this.ios || this.android || this.wp;
 		}
 	};
@@ -38,14 +38,14 @@
 		 * @param {object} el dom节点对象
 		 * @param {string} proxyStr 事件委托的选择器
 		 */
-		isProxyTarget: function (el, proxyStr) {
+		isProxyTarget: function(el, proxyStr) {
 			//class代理
 			if (proxyStr.indexOf('.') === 0) {
 				return new RegExp('(\\s|^)' + proxyStr.substring(1) + '(\\s|$)').test(el.className);
-			//id代理
+				//id代理
 			} else if (proxyStr.indexOf('#') === 0) {
 				return el.id == proxyStr.substring(1);
-			//标签代理
+				//标签代理
 			} else {
 				return el.tagName.toLocaleLowerCase() == proxyStr;
 			}
@@ -58,7 +58,7 @@
 		 * @param {number} x2 滑动结束的x坐标
 		 * @param {number} y2 滑动结束的y坐标
 		 */
-		swipeDirection: function (x1, y1, x2, y2) {
+		swipeDirection: function(x1, y1, x2, y2) {
 			return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 > x2 ? 'LEFT' : 'RIGHT') : (y1 > y2 ? 'UP' : 'DOWN');
 		},
 
@@ -68,27 +68,29 @@
 		 * @param {object} el 绑定了touch事件的dom元素
 		 * @param {object} event 原生事件对象
 		 */
-		_trigger: function (eventType, el, event) {
+		_trigger: function(eventType, el, event) {
 			var target = event.target,
 				currentTarget = el || event.currentTarget || event.target;
 
 			if (!target || !currentTarget._m_touch_events.hasOwnProperty(eventType)) {
-				return ;
+				return;
 			}
 
 			var _events = currentTarget._m_touch_events,
-				handlerList = _events[eventType];	//事件回调数组
+				handlerList = _events[eventType]; //事件回调数组
 
 			//开始冒泡循环
 			while (1) {
-				if (!target) { return ;}
+				if (!target) {
+					return;
+				}
 
 				//已冒泡至顶，检测是否需要执行回调
 				if (target === currentTarget) {
 					//处理（执行）事件回调列表
 					this._execHandler(handlerList, eventType, target, event, true);
 
-					return ;	//已冒泡至顶，无需再冒泡
+					return; //已冒泡至顶，无需再冒泡
 				}
 
 				//存放临时回调数组
@@ -99,7 +101,7 @@
 				handlerList = this._execHandler(tempHandlerList, eventType, target, event, false);
 				//如果执行结果返回false，则跳出冒泡及后续事件
 				if (handlerList === false) {
-					return ;
+					return;
 				}
 
 				//向上冒泡
@@ -116,9 +118,10 @@
 		 * @param {boolean} isBubbleTop 是否冒泡至顶了
 		 * @return {array} unExecHandlerList 返回不符合执行条件的未执行回调列表
 		 */
-		_execHandler: function (handlerList, eventType, target, event, isBubbleTop) {
+		_execHandler: function(handlerList, eventType, target, event, isBubbleTop) {
 			var i, len, handlerObj, proxyStr,
-				execList = [], unExecHandlerList = [];
+				execList = [],
+				unExecHandlerList = [];
 
 			for (i = 0, len = handlerList.length; i < len; i++) {
 				handlerObj = handlerList[i];
@@ -128,7 +131,7 @@
 				if (isBubbleTop) {
 					//将符合执行条件的（没有事件委托）推进执行列表
 					!proxyStr && execList.push(handlerObj);
-				//未冒泡至顶
+					//未冒泡至顶
 				} else {
 					//将符合执行条件的（有事件委托且是委托目标）推进执行列表
 					if (proxyStr && this.isProxyTarget(target, proxyStr)) {
@@ -162,8 +165,8 @@
 		 * @param {object} el 目标dom节点
 		 * @param {object} event 原生事件对象
 		 */
-		_callback: function (eventType, handler, el, event) {
-			var	touch = this.hasTouch ? (event.touches.length ? event.touches[0] : event.changedTouches[0]) : event;
+		_callback: function(eventType, handler, el, event) {
+			var touch = this.hasTouch ? (event.touches.length ? event.touches[0] : event.changedTouches[0]) : event;
 
 			//构建新的事件对象
 			var mTouchEvent = {
@@ -195,27 +198,27 @@
 		},
 
 		stopFilter: function(handler) {
-		  return function stopHandler (e) {
-		    e.stopPropagation()
-		    return handler.call(this, e)
-		  }
+			return function stopHandler(e) {
+				e.stopPropagation()
+				return handler.call(this, e)
+			}
 		},
 
 		preventFilter: function(handler) {
-		  return function preventHandler (e) {
-		    e.preventDefault()
-		    return handler.call(this, e)
-		  }
+			return function preventHandler(e) {
+				e.preventDefault()
+				return handler.call(this, e)
+			}
 		}
 	};
 
 	//相关控制配置项
 	var config = {
-		tapMaxDistance: 5,		//单击事件允许的滑动距离
-		doubleTapDelay: 200,	//双击事件的延时时长（两次单击的最大时间间隔）
-		longTapDelay: 700,		//长按事件的最小时长
-		swipeMinDistance: 5,	//触发方向滑动的最小距离
-		swipeTime: 300			//触发方向滑动允许的最长时长
+		tapMaxDistance: 5, //单击事件允许的滑动距离
+		doubleTapDelay: 200, //双击事件的延时时长（两次单击的最大时间间隔）
+		longTapDelay: 700, //长按事件的最小时长
+		swipeMinDistance: 5, //触发方向滑动的最小距离
+		swipeTime: 300 //触发方向滑动允许的最长时长
 	};
 
 	//事件类型列表
@@ -240,11 +243,11 @@
 	 * touch相关主函数
 	 * @param {object} el dom节点
 	 */
-	var Mtouch = function (elems) {
+	var Mtouch = function(elems) {
 		//this._events = {};	//事件集合
 		//this.el = el;
 
-		[].forEach.call(elems, function (el, index) {
+		[].forEach.call(elems, function(el, index) {
 			//将事件结合保存在dom节点上，以达到共享的目的
 			el._m_touch_events = el._m_touch_events || {};
 			bindTouchEvents.call(null, el);
@@ -256,8 +259,9 @@
 	};
 
 	Mtouch.prototype = {
-		each: function (handler) {
-			var i = 0, len = this.length;
+		each: function(handler) {
+			var i = 0,
+				len = this.length;
 
 			for (; i < len; i++) {
 				handler.call(this[i], i);
@@ -271,7 +275,7 @@
 		 * @param [string] proxyStr 事件委托选择器（可选）
 		 * @param {function} 事件监听回调函数
 		 */
-		on: function (eventType, proxyStr, handler) {
+		on: function(eventType, proxyStr, handler) {
 			//参数预处理
 			if (typeof proxyStr === 'function') {
 				handler = proxyStr;
@@ -284,10 +288,10 @@
 			//拆分多个事件类型
 			var eventTypesArr = eventType.split(/\s+/);
 
-			this.each(function () {
+			this.each(function() {
 				var _events = this._m_touch_events;
 
-				eventTypesArr.forEach(function (type, key) {
+				eventTypesArr.forEach(function(type, key) {
 					//如果未绑定过该事件，则创建一个
 					if (!_events[type]) {
 						_events[type] = [];
@@ -308,35 +312,35 @@
 		 * @param {string} eventType 事件类型
 		 * @param {string} proxyStr 事件委托选择器
 		 */
-		off: function (eventType, proxyStr, handler) {
+		off: function(eventType, proxyStr, handler) {
 			if (typeof proxyStr === 'function') {
 				handler = proxyStr;
 				proxyStr = null;
 			}
 
-			this.each(function () {
+			this.each(function() {
 				var _events = this._m_touch_events;
 
 				//没有传事件类型，则解绑所有事件
 				if (!eventType) {
 					this._m_touch_events = {};
-					return ;
+					return;
 				}
 
 				if (!_events.hasOwnProperty(eventType) || !_events[eventType].length) {
-					return ;
+					return;
 				}
 
 				//如果不需解绑代理及特定的回调，直接清空绑定的所有事件
 				if (!proxyStr && !handler) {
 					_events[eventType] = [];
-					return ;
+					return;
 				}
 
 				var handlerList = _events[eventType],
 					len = handlerList.length - 1,
 					handlerObj;
-				
+
 				//遍历事件数组，删除相应事件
 				while (len >= 0) {
 					handlerObj = handlerList[len];
@@ -355,7 +359,7 @@
 					len--;
 				}
 			});
-			
+
 			return this;
 		}
 	};
@@ -366,7 +370,7 @@
 	 */
 	function bindTouchEvents(el) {
 		if (el._m_touch_is_bind) {
-			return ;
+			return;
 		}
 
 		//触屏开始时间
@@ -376,7 +380,7 @@
 		var lastTouchTime = 0;
 
 		//坐标位置
-		var	x1, x2, x3, x4;
+		var x1, x2, x3, x4;
 
 		//单击、长按定时器
 		var tapTimer, longTapTimer;
@@ -385,20 +389,20 @@
 		var isTouchStart = false;
 
 		//重置所有定时器
-		var resetTimer = function () {
+		var resetTimer = function() {
 			clearTimeout(tapTimer);
 			clearTimeout(longTapTimer);
 		};
 
 		//触发单击事件
-		var triggerSingleTap = function (event) {
+		var triggerSingleTap = function(event) {
 			isTouchStart = false;
 			resetTimer();
 			util._trigger(eventList.TAP, el, event);
 		};
 
 		//开始触屏监听函数
-		var touchstart = function (event) {
+		var touchstart = function(event) {
 			var touch = util.hasTouch ? event.touches[0] : event;
 
 			x1 = touch.pageX;
@@ -414,7 +418,7 @@
 
 			clearTimeout(longTapTimer);
 			//设置长按事件定时器
-			longTapTimer = setTimeout(function () {
+			longTapTimer = setTimeout(function() {
 				isTouchStart = false;
 				//清楚定时器
 				resetTimer();
@@ -423,18 +427,18 @@
 		};
 
 		//手指滑动监听函数
-		var touchmove = function (event) {
+		var touchmove = function(event) {
 			if (!isTouchStart) {
-				return ;
+				return;
 			}
 
 			var touch = util.hasTouch ? event.touches[0] : event,
-				now   = +new Date();
+				now = +new Date();
 
 			//记录滑动初始值，为swipe事件传递更多值
 			event.startPosition = {
 				'pageX': x1,
-				'pageY': y1 
+				'pageY': y1
 			};
 
 			//触发滑动中事件
@@ -454,16 +458,16 @@
 			// if (distanceX > config.tapMaxDistance) {
 			// 	event.preventDefault();
 			// }
-			
+
 		};
 
 		//触屏结束函数
-		var touchend = function (event) {
+		var touchend = function(event) {
 			if (!isTouchStart) {
-				return ;
+				return;
 			}
 
-			var touch = util.hasTouch ? event.changedTouches[0] : event;	
+			var touch = util.hasTouch ? event.changedTouches[0] : event;
 
 			x2 = touch.pageX;
 			y2 = touch.pageY;
@@ -479,32 +483,30 @@
 			//如果开始跟结束坐标距离在允许范围内则触发单击事件
 			if (distanceX <= config.tapMaxDistance && distanceY <= config.tapMaxDistance) {
 				//如果没有绑定双击事件，则立即出发单击事件
-				if (!el._m_touch_events[eventList.DOUBLE_TAP] || !el._m_touch_events[eventList.DOUBLE_TAP].length ) {
+				if (!el._m_touch_events[eventList.DOUBLE_TAP] || !el._m_touch_events[eventList.DOUBLE_TAP].length) {
 					triggerSingleTap(event);
 					lastTouchTime = now;
 
-				//如果距离上一次触屏的时长大于双击延时时长，延迟触发单击事件
-				} else if (now - lastTouchTime > config.doubleTapDelay){
-					tapTimer = setTimeout(function () {
+					//如果距离上一次触屏的时长大于双击延时时长，延迟触发单击事件
+				} else if (now - lastTouchTime > config.doubleTapDelay) {
+					tapTimer = setTimeout(function() {
 						triggerSingleTap(event);
 					}, config.doubleTapDelay);
 
 					lastTouchTime = now;
 
-				//如果距离上一次触屏的时长在双击延时时长内
-				//则清除单击事件计时器，并触发双击事件
+					//如果距离上一次触屏的时长在双击延时时长内
+					//则清除单击事件计时器，并触发双击事件
 				} else {
 					resetTimer();
 					util._trigger(eventList.DOUBLE_TAP, el, event);
 					//双击后重置最后触屏时间为0，是为了从新开始计算下一次双击时长
 					lastTouchTime = 0;
 				}
-			//触发方向滑动事件
+				//触发方向滑动事件
 			} else {
 				//如果滑动时长在允许的范围内，且滑动距离超过了最小控制阀值，触发方向滑动事件
-				if (now - touchStartTime <= config.swipeTime
-					&& ( distanceX > config.swipeMinDistance  || distanceY > config.swipeMinDistance)
-				) {
+				if (now - touchStartTime <= config.swipeTime && (distanceX > config.swipeMinDistance || distanceY > config.swipeMinDistance)) {
 					//滑动方向LEFT, RIGHT, UP, DOWN
 					var direction = util.swipeDirection(x1, y1, x2, y2);
 
@@ -526,14 +528,14 @@
 		//绑定触屏取消事件
 		el.addEventListener(eventList.TOUCH_CANCEL, resetTimer);
 
-		el._m_touch_is_bind = true;	//标记该节点已经绑定过touch事件了
+		el._m_touch_is_bind = true; //标记该节点已经绑定过touch事件了
 	}
 
 	// 指令安装器
 	var mTouch = {};
 
 	//配置touch事件相关控制的接口
-	mTouch.config = function (cfg) {
+	mTouch.config = function(cfg) {
 		for (var k in cfg) {
 			if (cfg.hasOwnProperty(k)) {
 				config[k] = cfg[k];
@@ -541,16 +543,16 @@
 		}
 	};
 
-	mTouch.install = function (Vue) {
+	mTouch.install = function(Vue) {
 		Vue.directive('touch', {
 			acceptStatement: true,
-			bind: function () {
+			bind: function() {
 				if (!this.mtouch) {
 					this.mtouch = new Mtouch([this.el]);
 				}
 			},
 
-			update: function (handler) {
+			update: function(handler) {
 				var event = this.arg;
 				var selector = this.el.getAttribute(event + '-selector');
 
@@ -577,10 +579,10 @@
 				this.mtouch.on(event, selector, handler);
 			},
 
-			unbind: function () {
+			unbind: function() {
 				this.mtouch.off(
-					this.arg, 
-					this.params.selector || this.handler, 
+					this.arg,
+					this.params.selector || this.handler,
 					this.handler
 				);
 				this.mtouch = null;

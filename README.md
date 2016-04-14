@@ -77,4 +77,27 @@ mTouch('.btn').off('tap'); //错误的方式
 
 更多用法请查看 [demo](https://github.com/DMQ/mTouch/blob/master/src/demo.html)
 
+# vue 版本
+```
+<body>
+  ...
+  <div class="demo">
+    <span v-touch:tap="onTap">点我</span>
+  </div>
+  ...
+  <script>
+    Vue.use('mTouch');
+    var vue = new Vue({
+      el: '.demo',
+      data: {},
+      methods: {
+        onTap: function () {
+          console.log('你点击了一下');
+        }
+      }
+    })
+  </script>
+</body>
+```
+
 感谢您的阅读！
