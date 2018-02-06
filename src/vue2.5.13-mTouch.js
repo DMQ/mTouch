@@ -544,20 +544,24 @@
 	};
 
 	mTouch.install = function(Vue) {
-		Vue.directive('touch', {
-			acceptStatement: true,
-			bind: function() {
-				if (!this.mtouch) {
-					this.mtouch = new Mtouch([this.el]);
+		var dir = {
+			bind: function(el, binding, vnode) {
+				if (!dir.mtouch) {
+					dir.mtouch = new Mtouch([el]);
 				}
 			},
 
-			update: function(handler) {
-				var event = this.arg;
-				var selector = this.el.getAttribute(event + '-selector');
+			inserted: function(el, binding, vnode) {
+				dir.update(el, binding, vnode)
+			},
 
-				if (this.handler) {
-					this.mtouch.off(event, selector || this.handler, this.handler);
+			update: function(el, binding, vnode) {
+				var event = binding.arg;
+				var selector = el.getAttribute(event + '-selector');
+				var handler = binding.value
+
+				if (dir.handler) {
+					dir.mtouch.off(event, selector || dir.handler, dir.handler);
 				}
 
 				if (!event) {
@@ -567,27 +571,31 @@
 					console.warn('[vue-mtouch] handler must is a function');
 				}
 
-				if (this.modifiers.stop) {
+				if (binding.modifiers.stop) {
 					handler = util.stopFilter(handler);
 				}
-				if (this.modifiers.prevent) {
+				if (binding.modifiers.prevent) {
 					handler = util.preventFilter(handler);
 				}
 
-				this.handler = handler;
+				dir.handler = handler;
 
-				this.mtouch.on(event, selector, handler);
+				dir.mtouch.on(event, selector, handler);
 			},
 
-			unbind: function() {
-				this.mtouch.off(
-					this.arg,
-					this.params.selector || this.handler,
-					this.handler
+			unbind: function(el, binding, vnode) {
+				var event = binding.arg;
+				var selector = el.getAttribute(event + '-selector')
+				dir.mtouch.off(
+					event,
+					selector || dir.handler,
+					dir.handler
 				);
-				this.mtouch = null;
+				dir.mtouch = null;
 			}
-		});
+		}
+
+		Vue.directive('touch', dir)
 	};
 
 	return mTouch;
