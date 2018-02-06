@@ -91,7 +91,7 @@ mTouch('.btn').off('tap'); //错误的方式
   </div>
   ...
   <script>
-    Vue.use('mTouch');
+    Vue.use(mTouch);
     var vue = new Vue({
       el: '.demo',
       data: {},
