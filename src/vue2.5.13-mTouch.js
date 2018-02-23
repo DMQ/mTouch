@@ -543,11 +543,12 @@
 		}
 	};
 
+
 	mTouch.install = function(Vue) {
 		var dir = {
 			bind: function(el, binding, vnode) {
-				if (!dir.mtouch) {
-					dir.mtouch = new Mtouch([el]);
+				if (!el._m_touch) {
+					el._m_touch = new Mtouch([el]);
 				}
 			},
 
@@ -560,8 +561,8 @@
 				var selector = el.getAttribute(event + '-selector');
 				var handler = binding.value
 
-				if (dir.handler) {
-					dir.mtouch.off(event, selector || dir.handler, dir.handler);
+				if (el['_m_touch_handler_' + binding.arg]) {
+					el._m_touch.off(event, selector || el['_m_touch_handler_' + binding.arg], el['_m_touch_handler_' + binding.arg]);
 				}
 
 				if (!event) {
@@ -578,20 +579,20 @@
 					handler = util.preventFilter(handler);
 				}
 
-				dir.handler = handler;
+				el['_m_touch_handler_' + binding.arg] = handler;
 
-				dir.mtouch.on(event, selector, handler);
+				el._m_touch.on(event, selector, handler);
 			},
 
 			unbind: function(el, binding, vnode) {
 				var event = binding.arg;
 				var selector = el.getAttribute(event + '-selector')
-				dir.mtouch.off(
+				el._m_touch.off(
 					event,
-					selector || dir.handler,
-					dir.handler
+					selector || el['_m_touch_handler_' + binding.arg],
+					el['_m_touch_handler_' + binding.arg]
 				);
-				dir.mtouch = null;
+				el._m_touch = null;
 			}
 		}
 

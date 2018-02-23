@@ -25,7 +25,7 @@
 <body>
 	<div class="demo">
 		<div class="btn-wrap">
-			<button v-touch:tap="onTap">点我</button>
+			<button v-for="num in [1,2,3]" v-touch:tap="onTap.bind(this, num)">点我</button>
 		</div>
 	</div>
 
@@ -37,8 +37,8 @@
 	      el: '.demo',
 	      data: {},
 	      methods: {
-	        onTap: function () {
-	          console.log('你点击了一下');
+	        onTap: function (str, e) {
+	          console.log('你点击了一下', str, e);
 	        }
 	      }
 	    })
