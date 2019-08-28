@@ -15,6 +15,10 @@
     "touch",
     "手势"
   ],
+  "files": [
+    "src",
+    "dist"
+  ],
   "author": "DMQ",
   "license": "ISC",
   "bugs": {
