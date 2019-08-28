@@ -1,0 +1,33 @@
+{
+  "name": "mtouch-js",
+  "version": "1.0.0",
+  "description": "移动端 ( 兼容pc端) 手势操作库",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=develoption rollup -w -c",
+    "build": "cross-env NODE_ENV=production rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DMQ/mTouch.git"
+  },
+  "keywords": [
+    "touch",
+    "手势"
+  ],
+  "author": "DMQ",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DMQ/mTouch/issues"
+  },
+  "homepage": "https://github.com/DMQ/mTouch#readme",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "cross-env": "^5.2.0",
+    "rollup": "^1.20.2",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-uglify": "^6.0.2"
+  }
+}

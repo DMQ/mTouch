@@ -1,5 +1,5 @@
 # mTouch
-mTouch移动端 ( 兼容pc端) 手势操作库
+mTouch移动端 ( 兼容pc端) 手势操作库，解决`zepto`库“点透”的bug，并支持事件委托
 
 
 支持的事件：
