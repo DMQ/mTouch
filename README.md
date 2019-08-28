@@ -80,7 +80,7 @@ mTouch('.btn-group').off('tap', '.btn');
 mTouch('.btn').off('tap'); //错误的方式
 ```
 
-更多用法请查看 [demo](http://htmlpreview.github.io/?https://github.com/DMQ/mTouch/blob/master/src/demo.html) 为了你的更佳体验，请用Chrome模拟mobile或手机打开
+更多用法请查看 [demo](http://htmlpreview.github.io/?https://github.com/DMQ/mTouch/blob/es5/src/demo.html) 为了你的更佳体验，请用Chrome模拟mobile或手机打开
 
 # vue 版本
 ```html
