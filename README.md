@@ -14,7 +14,29 @@ mTouch移动端 ( 兼容pc端) 手势操作库，解决`zepto`库“点透”的
 * `swipeup` 向上划
 * `swipedown` 向下划
 
-# 提供的接口
+# 使用
+#### 1、npm 包
+```javascript
+// 安装
+npm install mtouch-js --save
+
+// 引用
+import { mtouchDom as mTouch } from 'mtouch-js';
+// import { mtouchVue as mTouch } from 'mtouch-js';
+// 需要使用es6语法的这样引入
+// import mtouchDom as mTouch from 'mtouch-js/dist/mtouch-dom.es.js';
+// import mtouchVue as mTouch from 'mtouch-js/dist/mtouch-vue.es.js';
+```
+
+#### 2、`<script>` 标签 引用cdn路径
+```html
+<script src="https://unpkg.com/mtouch-js@1.0.1/dist/mtouch-dom.min.js"></script>
+<!--
+通过 window.mTouch 调用
+-->
+``` 
+
+# API
 #### 1、mTouch.config（配置项）
 
 ```javascript
@@ -80,9 +102,9 @@ mTouch('.btn-group').off('tap', '.btn');
 mTouch('.btn').off('tap'); //错误的方式
 ```
 
-更多用法请查看 [demo](http://htmlpreview.github.io/?https://github.com/DMQ/mTouch/blob/master/src/demo.html) 为了你的更佳体验，请用Chrome模拟mobile或手机打开
+更多用法请查看 [demo](http://htmlpreview.github.io/?https://github.com/DMQ/mTouch/blob/master/demo.html) 为了你的更佳体验，请用Chrome模拟mobile或手机打开
 
-# vue 版本
+# vue 使用
 ```html
 <body>
   ...
