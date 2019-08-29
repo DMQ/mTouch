@@ -1,6 +1,6 @@
 {
   "name": "mtouch-js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "移动端 ( 兼容pc端) 手势操作库",
   "main": "index.js",
   "scripts": {
