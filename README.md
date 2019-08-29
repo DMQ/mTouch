@@ -45,7 +45,8 @@ import { mtouchDom as mTouch } from 'mtouch-js';
     doubleTapDelay: 200,   // 双击事件的延时时长（两次单击的最大时间间隔）
     longTapDelay: 700,     // 长按事件的最小时长
     swipeMinDistance: 20,  // 触发方向滑动的最小距离
-    swipeTime: 300	       // 触发方向滑动允许的最长时长
+    swipeTime: 300,	       // 触发方向滑动允许的最长时长
+    lockDirection: true, // 是否锁定方向，一旦触发横向/竖向滑动后，就一直锁定这个方向，如需不锁定方向，配置成false
   })
 ```
 
