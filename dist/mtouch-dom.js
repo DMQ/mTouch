@@ -49,7 +49,7 @@
     // 触发方向滑动的最小距离
     swipeTime: 300,
     // 触发方向滑动允许的最长时长
-    lockDirection: true // 是否锁定方向，一开始横向/竖向滑动后，就一直锁定这个方向，如不需要锁定，设置为false
+    lockDirection: true // 是否锁定方向，一旦触发横向/竖向滑动后，就一直锁定这个方向，如不需要锁定，设置为false
 
   };
   var mobileChecker = {
